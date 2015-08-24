@@ -26,7 +26,7 @@
 
     public function onClose(ConnectionInterface $con) {
       if ($this->clients[$con->resourceId])
-        $this->clients[$con->resourceId]->endGame();
+        $this->clients[$con->resourceId]->endGame(false);
     }
 
     public function onError(ConnectionInterface $con, \Exception $ex) {
