@@ -126,11 +126,6 @@
         case 'user':
           this.user(msg.action, msg.data);
           break;
-        case 'stage':
-          this.startDraw(msg.action, msg.data);
-          break;
-        case 'pong':
-          break;
         default:
           console.error('Unknown message type - ' + msg.event);
       }
@@ -168,18 +163,18 @@
           return false;
         });
         $("#login").fadeIn(400, function() {
-          $("#username").focus();
+          $("#email").focus();
         });
       } else
         console.error("Unknown athentication action: " + action, data);
     },
     user: function(action, data) {
-      if ("usernameExistsResponse" == action) {
+      if ("emailExistsResponse" == action) {
         if (false === data.exists) {
           var userDetails = $("#userDetails"),
-            username = $("#username"),
+            email = $("#email"),
             password = $("#password");
-          username.attr("disabled", "disabled");
+          email.attr("disabled", "disabled");
           password.attr("disabled", "disabled");
           $("#login input[type='submit']").parent().fadeOut(400, function() {
             $("#createUser")
@@ -201,7 +196,7 @@
               );
           });
         } else {
-          $("#username").focus();
+          $("#email").focus();
           alert('Username is already in use');
         }
       } else if ("createResponse" == action) {
@@ -223,7 +218,7 @@
     },
     createUser: function() {
       var userDetails = $("#userDetails"),
-        username = $("#username"),
+        email = $("#email"),
         password = $("#password");
 
       if (userDetails.is(":visible")) {
@@ -238,7 +233,7 @@
             'event' : 'user',
             'action' : 'create',
             'data' : {
-              'username' : username.val(),
+              'email' : email.val(),
               'password' : sha1(password.val()),
               'fullname' : fullName.val(),
               'email' : email.val()
@@ -246,16 +241,16 @@
           });
         }
       } else {
-        if (!username.val().trim().length)
-          alert("Please enter a username");
+        if (!email.val().trim().length)
+          alert("Please enter a email");
         else if (!password.val().trim().length)
           alert("Please enter a password");
         else
           this.socketSendMessage({
             'event' : 'user',
-            'action' : 'usernameExists',
+            'action' : 'emailExists',
             'data' : {
-              'username' : $("#username").val()
+              'email' : $("#email").val()
             }
           });
       }
@@ -268,14 +263,14 @@
     },
     login: function() {
       this.setStatus("Logging in");
-      var username = $("#username"),
+      var email = $("#email"),
         password = $("#password");
       this.hash = sha1(password.val());
       this.socketSendMessage({
         'event' : 'authentication',
         'action' : 'login',
         'data' : {
-          'username' : username.val(),
+          'email' : email.val(),
           'password' : sha1(this.token+this.hash)
         }
       });
@@ -289,10 +284,11 @@
     },
     createGame: function() {
       this.authenticated = true;
-      $("#username").val("");
+      $("#email").val("");
       $("#password").val("");
       $("#stage").empty();
       $("#login").fadeOut();
+
       this.setStatus("Creating Stage");
       var fragment = document.createDocumentFragment();
       for (var i = 15; i >= 0; i--) {
@@ -307,9 +303,6 @@
         fragment.appendChild(row);
       }
 
-      this.lastState = this.createEmptyArray(16, 32);
-      //console.log(this.lastState);
-
       var stage = document.getElementById("stage");
       if (stage)
         stage.appendChild(fragment);
@@ -319,16 +312,6 @@
       this.resizePixels();
 
       //TODO: DRAW GAME STATE
-      // this.setStatus("Starting Random Draw");
-      // setInterval(function() {
-      //   app.setStatus("Randomising Stage");
-      //   var newState = app.createEmptyArray(16, 32);
-      //   for (var i = 0; i < 100; i++) {
-      //     newState[(Math.floor(Math.random() * 16))][(Math.floor(Math.random() * 32))] = 1;
-      //   }
-      //   app.draw(newState);
-      // }, 50);
-      this.requestFrame();
 
       this.setStatus("Running");
       $("#stage").fadeIn();
@@ -358,50 +341,11 @@
         stage.style.top = ((window.innerHeight - $("#stage").outerHeight() - $("#status").outerHeight())/2)+"px";
         stage.style.position = "absolute";
       }
-    },
-    ping: function() {
-      if (this.token)
-        this.socketSendMessage({ 'event' : 'ping' });
-      else
-        clearInterval(window.ping);
-    },
-    createEmptyArray: function(length) {
-      var arr = new Array(length || 0),
-          i = length;
-      for (var j = 0; j < arr.length; j++) {
-        arr[j] = 0;
-      }
-      if (arguments.length > 1) {
-          var args = Array.prototype.slice.call(arguments, 1);
-          while(i--) arr[length-1 - i] = this.createEmptyArray.apply(app, args);
-      }
-      return arr;
-    },
-    requestFrame: function() {
-      setTimeout(function() {
-        app.socketSendMessage({'event' : 'stage'});
-      }, 100);
-    },
-    startDraw: function(action, data) {
-      this.draw(data.frame);
-      this.requestFrame();
-    },
-    draw: function(state) {
-      if (Array.isArray(state)) {
-        for (var i = 0; i < state.length; i++) {
-          for (var j = 0; j < state[i].length; j++) {
-            if (state[i][j] != app.lastState[i][j])
-              $("#pixel-"+i+"-"+j).toggleClass('fill');
-          }
-        }
-        app.lastState = state;
-      }
     }
   };
 
   if (app) {
     app.init();
-    window.ping = setInterval(function() { app.ping.call(app); }, 10e3);
   } else
     console.error('App not found');
 })();
