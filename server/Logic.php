@@ -24,22 +24,20 @@
         $this->error(Messaging::error("You have been logged out"));
 
       try {
-        $message = json_decode($message, !0);
+        $message = json_decode($message);
       } catch (Exception $ex) {
         $this->error(Messaging::error("Error converting JSON message to object"));
       }
 
-      if (!array_key_exists('event', $message))
+      if (!$message->event)
         $this->error(Messaging::error("Event was not passed in message"));
-      if (!array_key_exists('action', $message))
+      if (!$message->action)
         $this->error(Messaging::error("Action was not passed in message"));
 
-      $data = (array_key_exists('data', $message) ? $message['data'] : []);
-
       try{
-        switch ($message['event']) {
+        switch ($message->event) {
           case 'user':
-            $this->user->handleMessage($this, $message['action'], $data);
+            $this->user->handleMessage($this, $message->action, $message->data);
             break;
           default:
             $this->error(Messaging::error("Unknown event"));
