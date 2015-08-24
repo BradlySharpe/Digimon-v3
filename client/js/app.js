@@ -120,11 +120,11 @@
         throw new Exception('Invalid message returned from server');
 
       switch (msg.event) {
-        case 'authentication':
-          this.authentication(msg.action, msg.data);
-          break;
         case 'user':
-          this.user(msg.action, msg.data);
+          if (-1 < ['loginRequest', 'loginResponse'].indexOf(msg.action))
+            this.authentication(msg.action, msg.data);
+          else
+            this.user(msg.action, msg.data);
           break;
         default:
           console.error('Unknown message type - ' + msg.event);
@@ -267,8 +267,8 @@
         password = $("#password");
       this.hash = sha1(password.val());
       this.socketSendMessage({
-        'event' : 'authentication',
-        'action' : 'login',
+        'event' : 'user',
+        'action' : 'loginResponse',
         'data' : {
           'email' : email.val(),
           'password' : sha1(this.token+this.hash)
