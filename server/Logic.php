@@ -7,7 +7,7 @@
 
     public function __construct($_con) {
       $this->con = $_con;
-      $this->db = new DBase();
+      $this->db = new DBase($this);
     }
 
   }
