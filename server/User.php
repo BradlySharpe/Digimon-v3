@@ -2,18 +2,20 @@
 
   class User {
     private $db;
-    private $token;
+    private $token = "";
 
-    public function __construct($_db) {
+    public function __construct($_db, $clientId) {
   		$this->db = $_db;
-      $this->token = $this->generateToken();
+      $this->token = $this->generateToken($clientId);
   	}
 
     public function getToken() {
       return $this->token;
     }
 
-    private function generateToken() {
+    private function generateToken($clientId) {
+      if (!empty($token))
+        return $token;
       $token = "";
       $codeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       $codeAlphabet.= "abcdefghijklmnopqrstuvwxyz";
@@ -23,6 +25,13 @@
       for ($i=0; $i < $max; $i++) {
           $token .= $codeAlphabet[$this->crypto_rand_secure(0, strlen($codeAlphabet) - 1)];
       }
+
+      $this->db->prepareInsert([
+        'client' => $clientId,
+        'token' => $token
+      ]);
+      $this->db->insert('Session');
+
       return $token;
     }
 
@@ -60,6 +69,17 @@
       $sql = "SELECT `email` FROM User WHERE `email` = '" . $this->db->escape($email) . "'";
       $users = $this->db->fetchAll($sql);
       return ['exists' => (0 < count($users) && $email == $users[0]['email'])];
+    }
+
+    public function sessionActive() {
+      $sql = "SELECT `token` FROM Session WHERE active = 1 AND token = '" . $this->db->escape($this->token) . "'";
+      $sessions = $this->db->fetchAll($sql);
+      return (0 < count($sessions) && $this->token == $sessions[0]['token']);
+    }
+
+    public function invalidateSession() {
+      $sql = "UPDATE Session SET active = 0 WHERE active = 1 AND token = '" . $this->db->escape($this->token) . "'";
+      $this->db->query($sql);
     }
 
   }
