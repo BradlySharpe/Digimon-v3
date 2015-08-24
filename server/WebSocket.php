@@ -48,7 +48,7 @@
 
   $webSocketServer = new WsServer(new WebSocket());
   $webSocketServer->disableVersion(0);
-  $webSocketServer->setEncodingChecks(!1);
+  $webSocketServer->setEncodingChecks(0);
 
   $server = IoServer::factory(new HttpServer($webSocketServer), WebSocket::$port);
 
