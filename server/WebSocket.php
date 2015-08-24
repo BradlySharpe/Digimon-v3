@@ -25,14 +25,11 @@
     }
 
     public function onClose(ConnectionInterface $con) {
-      // The connection is closed, remove it, as we can no longer send it messages
-      //echo "Connection {$con->resourceId} has disconnected\n";
       if ($this->clients[$con->resourceId])
         $this->clients[$con->resourceId]->logout();
     }
 
     public function onError(ConnectionInterface $con, \Exception $ex) {
-      //echo "An error has occurred: {$ex->getMessage()}\n";
       // TODO: Log error
       $con->close();
     }
