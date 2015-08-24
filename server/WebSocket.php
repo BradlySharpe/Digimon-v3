@@ -31,7 +31,16 @@
 
     public function onError(ConnectionInterface $con, \Exception $ex) {
       // TODO: Log error
-      $con->close();
+      
+      try {
+        try {
+          if ($this->clients[$con->resourceId])
+            $this->clients[$con->resourceId]->endGame();
+        } catch (Exception $ex) {
+          /* Logic might not exist anymore */
+        }
+        $con->close();
+      } catch { /* Connection may already be closed */ }
     }
 
   }
