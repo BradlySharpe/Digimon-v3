@@ -12,13 +12,16 @@
     public function __construct($_con) {
       $this->con = $_con;
       $this->db = new DBase($this);
-      $this->user = new User($this->db);
+      $this->user = new User($this->db, $this->con->resourceId);
       $this->send(Messaging::request('authentication', 'login', ['token' => $this->user->getToken()]));
     }
 
     public function receiveMessage($message) {
       if (!$this->quiet)
         echo "Receive (" . $this->con->resourceId . ") - $message\n";
+
+      if (!$this->user->sessionActive())
+        $this->error(Messaging::error("You have been logged out"));
 
       try {
         $message = json_decode($message, !0);
@@ -51,8 +54,12 @@
     public function endGame($closeConnection = true) {
       if (!$this->quiet)
         echo "Game Closing - Closing Connection: " . ($closeConnection ? "true" : "false") . "\n";
-
-      // TODO: Close game
+        
+      try {
+        $this->user->invalidateSession();
+      } catch (Exception $ex) {
+        /* User could be destroyed already */
+      }
 
       if ($closeConnection) {
         try {
