@@ -6,18 +6,46 @@
   class Logic {
     private $con;
     private $db;
+    private $user;
     private $quiet = false;
 
     public function __construct($_con) {
       $this->con = $_con;
       $this->db = new DBase($this);
+      $this->user = new User($this->db);
+      $this->send(Messaging::request('authentication', 'login', ['token' => $this->user->generateToken()]));
     }
 
     public function receiveMessage($message) {
       if (!$this->quiet)
         echo "Receive (" . $this->con->resourceId . ") - $message\n";
 
-      // TODO: Handle message
+      try {
+        $message = json_decode($message, !0);
+      } catch (Exception $ex) {
+        $this->error(Messaging::error("Error converting JSON message to object"));
+      }
+
+      if (!array_key_exists('event', $message))
+        $this->error(Messaging::error("Event was not passed in message"));
+      if (!array_key_exists('action', $message))
+        $this->error(Messaging::error("Action was not passed in message"));
+
+      $data = (array_key_exists('data', $message) ? $message['data'] : []);
+
+      try{
+        switch ($message['event']) {
+          case 'user':
+            $this->user->handleMessage($this, $message['action'], $data);
+            break;
+          default:
+            $this->error(Messaging::error("Unknown event"));
+            break;
+        }
+      } catch (Exception $ex) {
+        // End game rather than kill server
+        $this->endGame();
+      }
     }
 
     public function endGame($closeConnection = true) {
