@@ -60,7 +60,7 @@
           break;
 
         default:
-          # code...
+          $logic->error("Unknown User action");
           break;
       }
     }
