@@ -13,7 +13,7 @@
       $this->con = $_con;
       $this->db = new DBase($this);
       $this->user = new User($this->db);
-      $this->send(Messaging::request('authentication', 'login', ['token' => $this->user->generateToken()]));
+      $this->send(Messaging::request('authentication', 'login', ['token' => $this->user->getToken()]));
     }
 
     public function receiveMessage($message) {
@@ -50,7 +50,7 @@
 
     public function endGame($closeConnection = true) {
       if (!$this->quiet)
-        echo "Game Closing\n";
+        echo "Game Closing - Closing Connection: " . ($closeConnection ? "true" : "false") . "\n";
 
       // TODO: Close game
 
