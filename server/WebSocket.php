@@ -31,7 +31,7 @@
 
     public function onError(ConnectionInterface $con, \Exception $ex) {
       // TODO: Log error
-      
+
       try {
         try {
           if ($this->clients[$con->resourceId])
@@ -40,7 +40,7 @@
           /* Logic might not exist anymore */
         }
         $con->close();
-      } catch { /* Connection may already be closed */ }
+      } catch (Exception $ex) { /* Connection may already be closed */ }
     }
 
   }
