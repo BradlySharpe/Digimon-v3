@@ -184,7 +184,6 @@ INSERT INTO Event (`name`, `userEvent`)
     ('train', 1),
     ('battle', 1),
     ('poop', 1),
-    ('pageview', 0),
     ('log-in', 1),
     ('log-out', 1);
 
