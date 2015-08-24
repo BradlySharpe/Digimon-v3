@@ -119,6 +119,21 @@ ALTER TABLE `Action`
     FOREIGN KEY (event)
       REFERENCES Event(id);
 
+-- Create Session table
+CREATE TABLE Session (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user INT NULL,
+  client VARCHAR(10) NOT NULL,
+  token VARCHAR(50) NOT NULL,
+  active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+ALTER TABLE `Session`
+  ADD INDEX `user` (`user`),
+  ADD CONSTRAINT fk_Session_UserId
+    FOREIGN KEY (user)
+      REFERENCES User(id);
+
 
 -- Populate with default data
 INSERT INTO Stage (`name`)
