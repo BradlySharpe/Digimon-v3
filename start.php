@@ -1,5 +1,5 @@
 <?php
-  require ('websocket.php');
+  require ('server' . DIRECTORY_SEPARATOR . 'websocket.php');
 
   /*
   Requires - Atom Script Package
