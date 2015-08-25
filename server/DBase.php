@@ -26,11 +26,11 @@ class Dbase {
 		$this->_conndb = mysql_connect($this->_host, $this->_user, $this->_password);
 
 		if (!$this->_conndb) {
-			$this->logic->output->error("Database connection failed: " . mysql_error());
+			$this->error("Database connection failed: " . mysql_error());
 		} else {
 			$_select = mysql_select_db($this->_name, $this->_conndb);
 			if (!$_select) {
-				$this->logic->output->error("Database selection failed:<br />" . mysql_error());
+				$this->error("Database selection failed:<br />" . mysql_error());
 			}
 		}
 		mysql_set_charset("utf8", $this->_conndb);
@@ -38,7 +38,7 @@ class Dbase {
 
 	public function close() {
 		if (!mysql_close($this->_conndb)) {
-			$this->logic->output->error("Closing connection failed.");
+			$this->error("Closing connection failed.");
 		}
 	}
 
@@ -67,7 +67,7 @@ class Dbase {
 		if(!$result) {
 			$output  = "Database query failed: ". mysql_error() . " - ";
 			$output .= "Last SQL query was: ".$this->_last_query;
-			$this->logic->output->error($output);
+			$this->error($output);
 		} else {
 			$this->_affected_rows = mysql_affected_rows($this->_conndb);
 		}
@@ -138,6 +138,10 @@ class Dbase {
 			$sql .= " WHERE `id` = '".$this->escape($id)."'";
 			return $this->query($sql);
 		}
+	}
+
+	private function error($message) {
+		echo "\nDatabase Error: \n\t$message\n";
 	}
 
 }
