@@ -50,15 +50,41 @@
         return $min + $rnd;
     }
 
-    public function handleMessage($logic, $action, $data) {
-      switch ($action) {
-        case 'emailExists':
-          if (array_key_exists('email', $data))
-            $logic->send(Messaging::response('user', $action, $this->checkUserExists($data['email'])));
-          else
-            $logic->error("Invalid call to User::emailExists - email not found");
-          break;
+    public function handleMessage($logic, $action, $type, $data) {
+      echo "Action: $action, Type: $type";
 
+      switch ($action) {
+        case 'email_exists':
+          if ('request' == $type) {
+            if (array_key_exists('email', $data))
+              $logic->send(Messaging::response('user', $action, $this->checkUserExists($data['email'])));
+            else
+              $logic->error("Invalid call to User::emailExists - email not found");
+          } else
+            $logic->error("Invalid call to User::emailExists");
+          break;
+        case 'create':
+          if ('request' == $type) {
+            $params = [];
+            foreach (['email', 'password', 'firstname', 'lastname'] as $key => $value) {
+              if (!array_key_exists($value, $data))
+                $logic->error("Invalid call to User::create - $value not found");
+              if (empty($data[$value]))
+                $logic->error("Invalid call to User::create - $value is empty");
+              $params[$key] = $data[$key];
+            }
+
+            //All fields are present and valid
+            $exists = $this->checkUserExists($data['email']);
+            $exists = $exists['exists'];
+            if (!$exists) {
+              $this->db->prepareInsert($params);
+              $this->db->insert('User');
+              $logic->send(Messaging::response('user', $action, $this->checkUserExists($data['email'])));
+            }
+          } else
+            $logic->error("Invalid call to User::create");
+          break;
         default:
           $logic->error("Unknown User action");
           break;
