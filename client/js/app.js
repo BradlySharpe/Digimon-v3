@@ -121,7 +121,7 @@
 
       switch (msg.event) {
         case 'user':
-          if (-1 < ['login_request', 'login_response'].indexOf(msg.action))
+          if (-1 < ['authentication_request', 'login_response'].indexOf(msg.action))
             this.authentication(msg.action, msg.data);
           else
             this.user(msg.action, msg.data);
@@ -153,7 +153,7 @@
           this.createGame();
         else
           this.setStatus(data.message, true);
-      } else if ("login_request" == action) {
+      } else if ("authentication_request" == action) {
         this.id = data.id;
         this.token = data.token;
         this.setStatus("Authentication required");
@@ -201,8 +201,8 @@
         }
       } else if ("create_response" == action) {
         if (true === data.created) {
-          this.setStatus("Account created");
-          this.login();
+          this.reset();
+          this.setStatus("Please check your email to activate your account");
         } else {
           this.reset();
           this.setStatus("There was a problem creating your account", true);
@@ -268,7 +268,7 @@
       this.hash = sha1(password.val());
       this.socketSendMessage({
         'event' : 'user',
-        'action' : 'login_response',
+        'action' : 'login_request',
         'data' : {
           'email' : email.val(),
           'password' : sha1(this.token+this.hash)
