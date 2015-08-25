@@ -121,7 +121,7 @@
 
       switch (msg.event) {
         case 'user':
-          if (-1 < ['loginRequest', 'loginResponse'].indexOf(msg.action))
+          if (-1 < ['login_request', 'login_response'].indexOf(msg.action))
             this.authentication(msg.action, msg.data);
           else
             this.user(msg.action, msg.data);
@@ -148,12 +148,12 @@
       setTimeout(function() { app.createSocket.call(app); }, timeout);
     },
     authentication: function(action, data) {
-      if ("loginResponse" == action) {
+      if ("login_response" == action) {
         if (true === data.loggedIn)
           this.createGame();
         else
           this.setStatus(data.message, true);
-      } else if ("loginRequest" == action) {
+      } else if ("login_request" == action) {
         this.id = data.id;
         this.token = data.token;
         this.setStatus("Authentication required");
@@ -169,7 +169,7 @@
         console.error("Unknown athentication action: " + action, data);
     },
     user: function(action, data) {
-      if ("emailExistsResponse" == action) {
+      if ("email_exists_response" == action) {
         if (false === data.exists) {
           var userDetails = $("#userDetails"),
             email = $("#email"),
@@ -199,7 +199,7 @@
           $("#email").focus();
           alert('Username is already in use');
         }
-      } else if ("createResponse" == action) {
+      } else if ("create_response" == action) {
         if (true === data.created) {
           this.setStatus("Account created");
           this.login();
@@ -222,21 +222,21 @@
         password = $("#password");
 
       if (userDetails.is(":visible")) {
-        var fullName = $("#fullName"),
-          email = $("#email");
-        if (!fullName.val().trim().length)
-          alert("Please enter your fullname");
-        else if (!email.val().trim().length)
-          alert("Please enter your email address");
+        var firstname = $("#firstName"),
+          lastname = $("#lastName");
+        if (!firstname.val().trim().length)
+          alert("Please enter your first name");
+        else if (!lastname.val().trim().length)
+          alert("Please enter your last name");
         else {
           this.socketSendMessage({
             'event' : 'user',
-            'action' : 'create',
+            'action' : 'create_request',
             'data' : {
               'email' : email.val(),
               'password' : sha1(password.val()),
-              'fullname' : fullName.val(),
-              'email' : email.val()
+              'firstname' : firstname.val(),
+              'lastname' : lastname.val()
             }
           });
         }
@@ -248,7 +248,7 @@
         else
           this.socketSendMessage({
             'event' : 'user',
-            'action' : 'emailExists',
+            'action' : 'email_exists_request',
             'data' : {
               'email' : $("#email").val()
             }
@@ -268,7 +268,7 @@
       this.hash = sha1(password.val());
       this.socketSendMessage({
         'event' : 'user',
-        'action' : 'loginResponse',
+        'action' : 'login_response',
         'data' : {
           'email' : email.val(),
           'password' : sha1(this.token+this.hash)
