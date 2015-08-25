@@ -35,11 +35,20 @@
         $this->error(Messaging::error("Action was not passed in message"));
 
       $data = (array_key_exists('data', $message) ? $message['data'] : []);
+      $message['event'] = strtolower($message['event']);
+      $message['action'] = strtolower($message['action']);
+
+      $matches = [];
+      if (!preg_match('/^(.+)_(request|response)$/', $message['action'], $matches) && 3 == count($matches))
+        $logic->error("Invalid call to User function - message type not found");
+
+      $message['action'] = $matches[1];
+      $message['type'] = $matches[2];
 
       try{
         switch ($message['event']) {
           case 'user':
-            $this->user->handleMessage($this, $message['action'], $data);
+            $this->user->handleMessage($this, $message['action'], $message['type'], $data);
             break;
           default:
             $this->error(Messaging::error("Unknown event"));
