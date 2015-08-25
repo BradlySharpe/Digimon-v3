@@ -76,8 +76,12 @@
             $exists = $this->checkUserExists($data['email']);
             $exists = $exists['exists'];
             if (!$exists) {
+              $params['activationKey'] = strtoupper(sha1(uniqid()));
               $this->db->prepareInsert($params);
               $logic->send(Messaging::response('user', $action, ['created' => $this->db->insert('User')]));
+
+              // TODO: Remove this, just for debug - need to send email
+              echo "\nActivation Key: " . $params['activationKey'] . "\n";
             } else {
               $logic->send(Messaging::response('user', $action, ['created' => false, 'reason' => 'email already exists']));
             }
@@ -85,8 +89,34 @@
             $logic->error("Invalid call to User::create");
           break;
         case 'login':
-          if ('response' == $type) {
+          if ('request' == $type) {
+            $params = [];
+            foreach (['email', 'password'] as $key => $value) {
+              if (!array_key_exists($value, $data))
+                $logic->error("Invalid call to User::login - $value not found");
+              if (empty($data[$value]))
+                $logic->error("Invalid call to User::login - $value is empty");
+              $params[$value] = $data[$value];
+            }
 
+            //All fields are present and valid
+            $sql = "SELECT `password`, `active` FROM User WHERE `email` = '" . $this->db->escape($params['email']) . "'";
+            $users = $this->db->fetchAll($sql);
+            if (1 == count($users)) {
+              if (1 == $users[0]['active']) {
+                $calcToken = sha1($this->getToken() . $users[0]['password']);
+                $logic->send(Messaging::response('user', $action,
+                  [
+                    'loggedIn' => ($calcToken == $params['password']),
+                    'message' => ($calcToken == $params['password']) ? '' : 'Password is incorrect'
+                  ])
+                );
+              } else {
+                $logic->send(Messaging::response('user', $action, ['loggedIn' => false, 'message' => 'Please check your email to activate your account']));
+              }
+            } else {
+              $logic->send(Messaging::response('user', $action, ['loggedIn' => false, 'message' => 'User not found']));
+            }
           } else
             $logic->error("Invalid call to User::login");
           break;
