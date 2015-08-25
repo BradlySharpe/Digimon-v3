@@ -71,7 +71,7 @@
                 $logic->error("Invalid call to User::create - $value not found");
               if (empty($data[$value]))
                 $logic->error("Invalid call to User::create - $value is empty");
-              $params[$key] = $data[$key];
+              $params[$value] = $data[$value];
             }
 
             //All fields are present and valid
@@ -80,7 +80,7 @@
             if (!$exists) {
               $this->db->prepareInsert($params);
               $this->db->insert('User');
-              $logic->send(Messaging::response('user', $action, $this->checkUserExists($data['email'])));
+              //$logic->send(Messaging::response('user', $action, $this->checkUserExists($data['email'])));
             }
           } else
             $logic->error("Invalid call to User::create");
