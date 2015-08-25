@@ -25,7 +25,7 @@
         [
           'error' => false,
           'event' => $event,
-          'action' => $action."Request",
+          'action' => $action."_request",
           'data' => $data
         ]
       );
@@ -36,7 +36,7 @@
         [
           'error' => false,
           'event' => $event,
-          'action' => $action."Response",
+          'action' => $action."_response",
           'data' => $data
         ]
       );
