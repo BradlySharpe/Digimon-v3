@@ -51,8 +51,6 @@
     }
 
     public function handleMessage($logic, $action, $type, $data) {
-      echo "Action: $action, Type: $type";
-
       switch ($action) {
         case 'email_exists':
           if ('request' == $type) {
@@ -79,11 +77,18 @@
             $exists = $exists['exists'];
             if (!$exists) {
               $this->db->prepareInsert($params);
-              $this->db->insert('User');
-              //$logic->send(Messaging::response('user', $action, $this->checkUserExists($data['email'])));
+              $logic->send(Messaging::response('user', $action, ['created' => $this->db->insert('User')]));
+            } else {
+              $logic->send(Messaging::response('user', $action, ['created' => false, 'reason' => 'email already exists']));
             }
           } else
             $logic->error("Invalid call to User::create");
+          break;
+        case 'login':
+          if ('response' == $type) {
+
+          } else
+            $logic->error("Invalid call to User::login");
           break;
         default:
           $logic->error("Unknown User action");
